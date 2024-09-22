@@ -1,0 +1,19 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_first"
+        android:title="1st" />
+
+    <item
+        android:id="@+id/menu_second"
+        android:title="2nd" />
+
+    <item
+        android:id="@+id/menu_third"
+        android:title="3rd">
+        <menu>
+            <item
+                android:id="@+id/menu_exit"
+                android:title="Exit" />
+        </menu>
+    </item>
+</menu>
