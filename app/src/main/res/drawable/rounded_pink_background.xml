@@ -1,0 +1,6 @@
+<!-- res/drawable/rounded_white_background.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#ea9999" />
+    <corners android:radius="30dp" />
+    <size android:width="50dp" android:height="50dp" /> <!-- Set a consistent width and height -->
+</shape>
