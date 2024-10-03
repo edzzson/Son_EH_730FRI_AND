@@ -8,58 +8,95 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import java.text.DecimalFormat
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var numberDisplay: TextView
-    private var input = StringBuilder()
-    private var firstNumber: Double? = null
-    private var currentOperation: String? = null
-    private var hasDecimal = false
+    private lateinit var display: TextView
+    private var currentResult: Double = 0.0
+    private var operator: String? = null
+    private var isOperatorPressed: Boolean = false
+    private var isNewOperation: Boolean = true
+    private val decimalFormat = DecimalFormat("#.##")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        numberDisplay = findViewById(R.id.number_display)
+        display = findViewById(R.id.number_display)
 
         // Number buttons
-        val buttons = listOf(
-            Pair(R.id.btn_0, "0"), Pair(R.id.btn_1, "1"), Pair(R.id.btn_2, "2"),
-            Pair(R.id.btn_3, "3"), Pair(R.id.btn_4, "4"), Pair(R.id.btn_5, "5"),
-            Pair(R.id.btn_6, "6"), Pair(R.id.btn_7, "7"), Pair(R.id.btn_8, "8"),
-            Pair(R.id.btn_9, "9")
-        )
+        val btn0: Button = findViewById(R.id.btn_0)
+        val btn1: Button = findViewById(R.id.btn_1)
+        val btn2: Button = findViewById(R.id.btn_2)
+        val btn3: Button = findViewById(R.id.btn_3)
+        val btn4: Button = findViewById(R.id.btn_4)
+        val btn5: Button = findViewById(R.id.btn_5)
+        val btn6: Button = findViewById(R.id.btn_6)
+        val btn7: Button = findViewById(R.id.btn_7)
+        val btn8: Button = findViewById(R.id.btn_8)
+        val btn9: Button = findViewById(R.id.btn_9)
 
-        buttons.forEach { (id, value) ->
-            findViewById<Button>(id).setOnClickListener {
-                onNumberClick(value)
+        // Operator buttons
+        val btnAdd: Button = findViewById(R.id.additional_button)
+        val btnSubtract: Button = findViewById(R.id.minus_button)
+        val btnEquals: Button = findViewById(R.id.equals_button)
+        val btnClear: Button = findViewById(R.id.clear_button)
+        val btnErase: ImageButton = findViewById(R.id.erase_button)
+        val btnDecimal: Button = findViewById(R.id.btn_decimal)
+
+        // Number button listeners
+        val numberClickListener = { number: String ->
+            if (isNewOperation) {
+                display.text = ""
+                isNewOperation = false
+            }
+            display.append(number)
+        }
+
+        btn0.setOnClickListener { numberClickListener("0") }
+        btn1.setOnClickListener { numberClickListener("1") }
+        btn2.setOnClickListener { numberClickListener("2") }
+        btn3.setOnClickListener { numberClickListener("3") }
+        btn4.setOnClickListener { numberClickListener("4") }
+        btn5.setOnClickListener { numberClickListener("5") }
+        btn6.setOnClickListener { numberClickListener("6") }
+        btn7.setOnClickListener { numberClickListener("7") }
+        btn8.setOnClickListener { numberClickListener("8") }
+        btn9.setOnClickListener { numberClickListener("9") }
+        btnDecimal.setOnClickListener { numberClickListener(".") }
+
+        // Operator button listeners
+        btnAdd.setOnClickListener { handleOperator("+") }
+        btnSubtract.setOnClickListener { handleOperator("-") }
+
+        // Clear button
+        btnClear.setOnClickListener {
+            clear()
+        }
+
+        // Backspace button
+        btnErase.setOnClickListener {
+            val currentText = display.text.toString()
+            if (currentText.isNotEmpty()) {
+                display.text = currentText.substring(0, currentText.length - 1)
             }
         }
 
-        findViewById<Button>(R.id.btn_decimal).setOnClickListener {
-            onDecimalClick()
-        }
-
-        findViewById<ImageButton>(R.id.btn_back).setOnClickListener {
-            onBackspaceClick()
-        }
-
-        findViewById<Button>(R.id.btn_plus).setOnClickListener {
-            onOperationClick("+")
-        }
-
-        findViewById<Button>(R.id.btn_minus).setOnClickListener {
-            onOperationClick("-")
-        }
-
-        findViewById<Button>(R.id.btn_equal).setOnClickListener {
-            onEqualClick()
-        }
-
-        findViewById<Button>(R.id.btn_clear).setOnClickListener {
-            onClearClick()
+        // Equals button
+        btnEquals.setOnClickListener {
+            if (operator != null) {
+                val operand2 = display.text.toString().toDoubleOrNull() ?: 0.0
+                currentResult = when (operator) {
+                    "+" -> currentResult + operand2
+                    "-" -> currentResult - operand2
+                    else -> currentResult
+                }
+                display.text = formatResult(currentResult)
+                isNewOperation = true
+                isOperatorPressed = false
+            }
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -69,80 +106,45 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun onNumberClick(value: String) {
-        val inputString = input.toString()
+    private fun handleOperator(op: String) {
+        val currentText = display.text.toString()
 
-        // Limit to 2 decimal places
-        if (hasDecimal && inputString.substringAfter('.').length >= 2) return
-
-        // Limit to 2 numbers before the decimal point
-        if (!hasDecimal && inputString.length >= 2) return
-
-        input.append(value)
-        updateDisplay()
-    }
-
-    private fun onDecimalClick() {
-        if (!hasDecimal && input.isNotEmpty()) {
-            input.append('.')
-            hasDecimal = true
-            updateDisplay()
-        }
-    }
-
-    private fun onBackspaceClick() {
-        if (input.isNotEmpty()) {
-            if (input.last() == '.') {
-                hasDecimal = false
+        if (!isOperatorPressed) {
+            // This is the first time an operator is pressed, so store the first operand
+            currentResult = currentText.toDoubleOrNull() ?: 0.0
+            operator = op
+            isOperatorPressed = true
+            isNewOperation = true
+        } else {
+            // If another operator is pressed after a result, calculate the new result
+            val operand2 = currentText.toDoubleOrNull() ?: 0.0
+            currentResult = when (operator) {
+                "+" -> currentResult + operand2
+                "-" -> currentResult - operand2
+                else -> currentResult
             }
-            input.deleteCharAt(input.length - 1)
-            updateDisplay()
+            operator = op
+            display.text = formatResult(currentResult)
+            isNewOperation = true
         }
-    }
-
-    private fun onOperationClick(operation: String) {
-        if (input.isNotEmpty()) {
-            firstNumber = input.toString().toDouble()
-            currentOperation = operation
-            input.clear()
-            hasDecimal = false
-        }
-    }
-
-    private fun onEqualClick() {
-        if (firstNumber != null && input.isNotEmpty()) {
-            val secondNumber = input.toString().toDouble()
-            val result = when (currentOperation) {
-                "+" -> firstNumber!! + secondNumber
-                "-" -> firstNumber!! - secondNumber
-                else -> return
-            }
-
-            firstNumber = result
-            input.clear()
-            input.append(formatResult(result))
-            hasDecimal = input.contains(".")
-            updateDisplay()
-        }
-    }
-
-    private fun onClearClick() {
-        input.clear()
-        firstNumber = null
-        currentOperation = null
-        hasDecimal = false
-        updateDisplay()
-    }
-
-    private fun updateDisplay() {
-        numberDisplay.text = if (input.isEmpty()) "0" else input.toString()
     }
 
     private fun formatResult(result: Double): String {
-        return if (result == result.toInt().toDouble()) {
+        return if (result % 1 == 0.0) {
+            // Whole number, remove decimal part
             result.toInt().toString()
         } else {
-            String.format("%.2f", result)
+            // Decimal number, format to 2 decimal places
+            decimalFormat.format(result)
         }
     }
+
+    private fun clear() {
+        display.text = "0"
+        currentResult = 0.0
+        operator = null
+        isOperatorPressed = false
+        isNewOperation = true
+    }
+
 }

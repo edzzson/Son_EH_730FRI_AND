@@ -62,7 +62,7 @@
             android:textColor="#000000" />
 
         <ImageButton
-            android:id="@+id/btn_back"
+            android:id="@+id/erase_button"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -117,7 +117,7 @@
             android:textColor="#000000" />
 
         <Button
-            android:id="@+id/btn_plus"
+            android:id="@+id/additional_button"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -171,7 +171,7 @@
             android:textColor="#000000" />
 
         <Button
-            android:id="@+id/btn_minus"
+            android:id="@+id/minus_button"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -192,7 +192,7 @@
         android:background="#EDEDED">
 
         <Button
-            android:id="@+id/btn_clear"
+            android:id="@+id/clear_button"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -226,7 +226,7 @@
             android:elevation="4dp"/>
 
         <Button
-            android:id="@+id/btn_equal"
+            android:id="@+id/equals_button"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
